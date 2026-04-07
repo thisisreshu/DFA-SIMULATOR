@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFA Visualizer Interactive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="background-decorations">
+        <div class="blob shape-1"></div>
+        <div class="blob shape-2"></div>
+        <div class="blob shape-3"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <h1>DFA Simulator</h1>
+            <p>Theory of Computation - Interactive Automaton</p>
+        </header>
+
+        <main class="grid-layout">
+            <aside class="control-panel glass-panel">
+                <div class="control-group">
+                    <label for="dfa-select">Select Automaton</label>
+                    <select id="dfa-select">
+                        <option value="endsWithAB">String ends with 'ab'</option>
+                        <option value="evenZeros">Even number of 0s</option>
+                        <option value="contains11">Contains '11'</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="input-string">Test String</label>
+                    <input type="text" id="input-string" placeholder="e.g. abaab" autocomplete="off">
+                </div>
+                <div class="actions">
+                    <button id="btn-run" class="btn primary">Simulate</button>
+                    <button id="btn-reset" class="btn secondary">Reset</button>
+                </div>
+                <div id="result-display" class="result-display hidden">
+                    <span id="result-text">ACCEPTED</span>
+                </div>
+                <div class="info-section">
+                    <h3>Current Rules:</h3>
+                    <p id="alphabet-info"></p>
+                    <p id="desc-info"></p>
+                </div>
+            </aside>
+
+            <section class="visualization-area glass-panel">
+                <div class="tape-container">
+                    <div id="tape" class="tape"></div>
+                </div>
+
+                <div id="canvas-container" class="canvas-container">
+                    <!-- Nodes and Edges will be injected here via JS -->
+                    <svg id="edges-svg"></svg>
+                    <div id="nodes-container"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

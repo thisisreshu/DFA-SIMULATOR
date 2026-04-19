@@ -1,95 +1,108 @@
-const DFAs = {
-    endsWithAB: {
-        description: "Accepts strings ending with 'ab'",
-        alphabet: ['a', 'b'],
-        states: {
-            'q0': { x: 20, y: 50, isStart: true, isAccept: false },
-            'q1': { x: 50, y: 50, isStart: false, isAccept: false },
-            'q2': { x: 80, y: 50, isStart: false, isAccept: true }
-        },
-        transitions: [
-            { from: 'q0', to: 'q1', symbols: ['a'] },
-            { from: 'q0', to: 'q0', symbols: ['b'] },
-            { from: 'q1', to: 'q1', symbols: ['a'] },
-            { from: 'q1', to: 'q2', symbols: ['b'] },
-            { from: 'q2', to: 'q1', symbols: ['a'] },
-            { from: 'q2', to: 'q0', symbols: ['b'] }
-        ]
-    },
-    evenZeros: {
-        description: "Accepts strings with an even number of '0's",
-        alphabet: ['0', '1'],
-        states: {
-            'q0': { x: 30, y: 50, isStart: true, isAccept: true },
-            'q1': { x: 70, y: 50, isStart: false, isAccept: false }
-        },
-        transitions: [
-            { from: 'q0', to: 'q1', symbols: ['0'] },
-            { from: 'q0', to: 'q0', symbols: ['1'] },
-            { from: 'q1', to: 'q0', symbols: ['0'] },
-            { from: 'q1', to: 'q1', symbols: ['1'] }
-        ]
-    },
-    contains11: {
-        description: "Accepts strings containing '11'",
-        alphabet: ['0', '1'],
-        states: {
-            'q0': { x: 20, y: 50, isStart: true, isAccept: false },
-            'q1': { x: 50, y: 50, isStart: false, isAccept: false },
-            'q2': { x: 80, y: 50, isStart: false, isAccept: true }
-        },
-        transitions: [
-            { from: 'q0', to: 'q0', symbols: ['0'] },
-            { from: 'q0', to: 'q1', symbols: ['1'] },
-            { from: 'q1', to: 'q0', symbols: ['0'] },
-            { from: 'q1', to: 'q2', symbols: ['1'] },
-            { from: 'q2', to: 'q2', symbols: ['0', '1'] }
-        ]
-    }
-};
-
 let currentDFA = null;
 let simulationTimeout = null;
 
-// DOM Elements
-const dfaSelect = document.getElementById('dfa-select');
-const inputStringBox = document.getElementById('input-string');
-const btnRun = document.getElementById('btn-run');
-const btnReset = document.getElementById('btn-reset');
+const numStatesInput = document.getElementById('num-states');
+const startStateInput = document.getElementById('start-state');
+const finalStatesInput = document.getElementById('final-states');
+const transitionsContainer = document.getElementById('transitions-container');
+const addTransitionBtn = document.getElementById('add-transition-btn');
+const buildDfabtn = document.getElementById('build-dfa-btn');
+const testStringInput = document.getElementById('test-string');
+const runBtn = document.getElementById('run-btn');
+const resultDisplay = document.getElementById('result-display');
+const tapeContainer = document.getElementById('tape-container');
 const nodesContainer = document.getElementById('nodes-container');
 const edgesSvg = document.getElementById('edges-svg');
-const tapeContainer = document.getElementById('tape');
-const resultDisplay = document.getElementById('result-display');
-const resultText = document.getElementById('result-text');
-const alphabetInfo = document.getElementById('alphabet-info');
-const descInfo = document.getElementById('desc-info');
 
-// Event Listeners
-dfaSelect.addEventListener('change', () => {
-    loadDFA(dfaSelect.value);
+function createTransitionRow(from = '', input = '', to = '') {
+    const div = document.createElement('div');
+    div.className = 'transition-row';
+    div.innerHTML = `
+        <input type="text" placeholder="Current (e.g. q0)" class="t-from" value="${from}">
+        <input type="text" placeholder="Input (e.g. a)" class="t-input" value="${input}">
+        <input type="text" placeholder="Final (e.g. q1)" class="t-to" value="${to}">
+        <button class="remove-btn" onclick="this.parentElement.remove()">X</button>
+    `;
+    transitionsContainer.appendChild(div);
+}
+
+// Initial defaults
+createTransitionRow('q0', 'a', 'q1');
+createTransitionRow('q0', 'b', 'q0');
+createTransitionRow('q1', 'a', 'q1');
+createTransitionRow('q1', 'b', 'q2');
+createTransitionRow('q2', 'a', 'q1');
+createTransitionRow('q2', 'b', 'q0');
+
+addTransitionBtn.addEventListener('click', () => createTransitionRow());
+
+buildDfabtn.addEventListener('click', buildDFA);
+
+runBtn.addEventListener('click', runSimulation);
+
+window.addEventListener('resize', () => {
+    if(currentDFA) renderDFA(currentDFA);
 });
 
-btnRun.addEventListener('click', runSimulation);
-btnReset.addEventListener('click', () => loadDFA(dfaSelect.value));
-
-// Init
-window.addEventListener('resize', () => renderDFA(currentDFA));
-loadDFA('endsWithAB');
-
-function loadDFA(dfaKey) {
+function buildDFA() {
     clearTimeout(simulationTimeout);
-    currentDFA = DFAs[dfaKey];
-
-    // Update Info
-    alphabetInfo.textContent = `Alphabet: Σ = { ${currentDFA.alphabet.join(', ')} }`;
-    descInfo.textContent = `Description: ${currentDFA.description}`;
-
-    inputStringBox.value = '';
-    resultDisplay.className = 'result-display hidden';
+    resultDisplay.className = 'result';
     tapeContainer.innerHTML = '';
+    
+    const numStates = parseInt(numStatesInput.value) || 1;
+    const startState = startStateInput.value.trim();
+    const finalStates = finalStatesInput.value.split(',').map(s => s.trim()).filter(s => s);
+    
+    const states = {};
+    for (let i = 0; i < numStates; i++) {
+        const stateName = `q${i}`;
+        const angle = (Math.PI * 2 * i) / numStates - Math.PI / 2;
+        const radius = numStates > 1 ? 35 : 0; 
+        
+        states[stateName] = {
+            isStart: stateName === startState,
+            isAccept: finalStates.includes(stateName),
+            x: 50 + radius * Math.cos(angle),
+            y: 50 + radius * Math.sin(angle)
+        };
+    }
 
-    btnRun.disabled = false;
-    inputStringBox.disabled = false;
+    if (!states[startState] && numStates > 0) {
+        states[startState] = {
+            isStart: true,
+            isAccept: finalStates.includes(startState),
+            x: 50, y: 50
+        };
+    }
+    
+    const transitionRows = document.querySelectorAll('.transition-row');
+    const transitions = [];
+    const alphabet = new Set();
+    const groupedTrans = {};
+
+    transitionRows.forEach(row => {
+        const from = row.querySelector('.t-from').value.trim();
+        const inputStr = row.querySelector('.t-input').value.trim();
+        const to = row.querySelector('.t-to').value.trim();
+        
+        if (from && inputStr && to) {
+            const symbols = inputStr.split(',').map(s => s.trim());
+            symbols.forEach(s => alphabet.add(s));
+
+            const key = `${from}->${to}`;
+            if (!groupedTrans[key]) {
+                groupedTrans[key] = { from, to, symbols: [] };
+                transitions.push(groupedTrans[key]);
+            }
+            groupedTrans[key].symbols.push(...symbols);
+        }
+    });
+
+    currentDFA = {
+        states,
+        transitions,
+        alphabet: Array.from(alphabet)
+    };
 
     renderDFA(currentDFA);
 }
@@ -98,7 +111,6 @@ function renderDFA(dfa) {
     nodesContainer.innerHTML = '';
     edgesSvg.innerHTML = '';
 
-    // Add definitions for arrowheads
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
     marker.setAttribute('id', 'arrowhead');
@@ -114,10 +126,9 @@ function renderDFA(dfa) {
     defs.appendChild(marker);
     edgesSvg.appendChild(defs);
 
-    const canvasWidth = edgesSvg.clientWidth || 800;
+    const canvasWidth = edgesSvg.clientWidth || 600;
     const canvasHeight = edgesSvg.clientHeight || 400;
 
-    // Render Nodes
     for (const [stateName, stateProps] of Object.entries(dfa.states)) {
         const node = document.createElement('div');
         node.className = 'dfa-node';
@@ -126,7 +137,6 @@ function renderDFA(dfa) {
         node.id = `node-${stateName}`;
         node.textContent = stateName;
 
-        // Convert percentage to actual pixels for node placement
         const px = (stateProps.x / 100) * canvasWidth;
         const py = (stateProps.y / 100) * canvasHeight;
 
@@ -135,13 +145,10 @@ function renderDFA(dfa) {
         nodesContainer.appendChild(node);
     }
 
-    // Render Edges
-    // Pair reverse transitions to curve them
-    const renderedPairs = new Set();
-
     dfa.transitions.forEach(transition => {
         const fromState = dfa.states[transition.from];
         const toState = dfa.states[transition.to];
+        if(!fromState || !toState) return;
 
         const x1 = (fromState.x / 100) * canvasWidth;
         const y1 = (fromState.y / 100) * canvasHeight;
@@ -149,13 +156,14 @@ function renderDFA(dfa) {
         const y2 = (toState.y / 100) * canvasHeight;
 
         const hasReverse = dfa.transitions.some(t => t.from === transition.to && t.to === transition.from);
-
-        drawEdge(x1, y1, x2, y2, transition.from, transition.to, transition.symbols.join(', '), hasReverse);
+        const displayLabel = Array.from(new Set(transition.symbols)).join(',');
+        
+        drawEdge(x1, y1, x2, y2, transition.from, transition.to, displayLabel, hasReverse);
     });
 }
 
 function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
-    const nodeRadius = 40;
+    const nodeRadius = 23;
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.id = `edge-${fromName}-${toName}`;
     g.classList.add('edge-group');
@@ -164,12 +172,11 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
     path.setAttribute('class', 'edge-path');
     path.setAttribute('marker-end', 'url(#arrowhead)');
 
-    let cx, cy; // for label
+    let cx, cy; 
 
     if (fromName === toName) {
-        // Self loop
-        const loopRadius = 35;
-        path.setAttribute('d', `M ${x1 - 15} ${y1 - nodeRadius} A ${loopRadius} ${loopRadius} 0 1 1 ${x1 + 15} ${y1 - nodeRadius}`);
+        const loopRadius = 25;
+        path.setAttribute('d', `M ${x1 - 10} ${y1 - nodeRadius} A ${loopRadius} ${loopRadius} 0 1 1 ${x1 + 10} ${y1 - nodeRadius}`);
         cx = x1;
         cy = y1 - nodeRadius - loopRadius * 1.5;
     } else {
@@ -177,7 +184,8 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
         const dy = y2 - y1;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Adjust points to snap to node border
+        if(dist === 0) return;
+
         const nx = dx / dist;
         const ny = dy / dist;
         const startX = x1 + nx * nodeRadius;
@@ -186,11 +194,10 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
         const endY = y2 - ny * nodeRadius;
 
         if (isCurved) {
-            // Curve the path
             const midX = (startX + endX) / 2;
             const midY = (startY + endY) / 2;
-            const offset = 40;
-            const ctrlX = midX - ny * offset; // perpendicular offset
+            const offset = 30;
+            const ctrlX = midX - ny * offset; 
             const ctrlY = midY + nx * offset;
 
             path.setAttribute('d', `M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${endX} ${endY}`);
@@ -199,13 +206,10 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
         } else {
             path.setAttribute('d', `M ${startX} ${startY} L ${endX} ${endY}`);
             cx = (startX + endX) / 2;
-            cy = (startY + endY) / 2 - 15;
+            cy = (startY + endY) / 2 - 12;
         }
     }
 
-    path.setAttribute('stroke-dasharray', '10, 0'); // init
-
-    // Label Background
     const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -216,10 +220,10 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
     text.textContent = labelText;
 
     bg.setAttribute('class', 'edge-label-bg');
-    bg.setAttribute('x', cx - 20);
-    bg.setAttribute('y', cy - 12);
-    bg.setAttribute('width', 40);
-    bg.setAttribute('height', 24);
+    bg.setAttribute('x', cx - 15);
+    bg.setAttribute('y', cy - 10);
+    bg.setAttribute('width', 30);
+    bg.setAttribute('height', 20);
 
     textGroup.appendChild(bg);
     textGroup.appendChild(text);
@@ -229,29 +233,32 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
     edgesSvg.appendChild(g);
 }
 
-async function runSimulation() {
-    const inputStr = inputStringBox.value.trim();
+function sleep(ms) {
+    return new Promise(resolve => {
+        simulationTimeout = setTimeout(resolve, ms);
+    });
+}
 
-    // Validation
-    const invalidChar = [...inputStr].find(c => !currentDFA.alphabet.includes(c));
-    if (invalidChar) {
-        inputStringBox.classList.add('error-border');
-        setTimeout(() => inputStringBox.classList.remove('error-border'), 1000);
+async function runSimulation() {
+    if (!currentDFA) {
+        alert("Please build the DFA first!");
         return;
     }
 
-    // Lock UI
-    btnRun.disabled = true;
-    inputStringBox.disabled = true;
-    resultDisplay.className = 'result-display hidden';
+    const inputStr = testStringInput.value.trim();
+    
+    // UI logic lock
+    runBtn.disabled = true;
+    testStringInput.disabled = true;
+    buildDfabtn.disabled = true;
+    resultDisplay.className = 'result';
 
-    // Build Tape
     tapeContainer.innerHTML = '';
     const tapeCells = [];
     if (inputStr.length === 0) {
         const cell = document.createElement('div');
         cell.className = 'tape-cell';
-        cell.textContent = 'ε'; // Epsilon for empty string
+        cell.textContent = 'ε';
         tapeContainer.appendChild(cell);
         tapeCells.push(cell);
     } else {
@@ -264,49 +271,56 @@ async function runSimulation() {
         }
     }
 
-    // Reset Nodes visually
     document.querySelectorAll('.dfa-node').forEach(n => n.classList.remove('active'));
     document.querySelectorAll('.edge-group').forEach(e => e.classList.remove('active'));
 
-    // Find Start State
-    let currentStateName = Object.keys(currentDFA.states).find(k => currentDFA.states[k].isStart);
+    const startStateName = Object.keys(currentDFA.states).find(k => currentDFA.states[k].isStart);
+    if(!startStateName) {
+        alert("No start state defined!");
+        runBtn.disabled = false;
+        testStringInput.disabled = false;
+        buildDfabtn.disabled = false;
+        return;
+    }
+
+    let currentStateName = startStateName;
     let currentNode = document.getElementById(`node-${currentStateName}`);
-    currentNode.classList.add('active');
+    if(currentNode) currentNode.classList.add('active');
 
     await sleep(800);
 
-    // Simulation Loop
     const characters = inputStr.length === 0 ? [] : [...inputStr];
 
     for (let i = 0; i < characters.length; i++) {
         const char = characters[i];
         const cell = tapeCells[i];
 
-        // Highlight tape cell
         cell.classList.add('active');
 
-        // Find transition
         const transition = currentDFA.transitions.find(t => t.from === currentStateName && t.symbols.includes(char));
+        
         if (!transition) {
-            // Should not happen with well-defined DFAs but fallback just in case
-            break;
+            resultDisplay.textContent = `REJECTED (No transition from ${currentStateName} for '${char}')`;
+            resultDisplay.className = 'result rejected';
+            runBtn.disabled = false;
+            testStringInput.disabled = false;
+            buildDfabtn.disabled = false;
+            return;
         }
 
         const edgeId = `edge-${currentStateName}-${transition.to}`;
         const edgeG = document.getElementById(edgeId);
 
-        // Highlight Transition Edge
         if (edgeG) edgeG.classList.add('active');
 
         await sleep(1000);
 
-        // Move to next state
-        currentNode.classList.remove('active');
+        if(currentNode) currentNode.classList.remove('active');
         if (edgeG) edgeG.classList.remove('active');
 
         currentStateName = transition.to;
         currentNode = document.getElementById(`node-${currentStateName}`);
-        currentNode.classList.add('active');
+        if(currentNode) currentNode.classList.add('active');
 
         cell.classList.remove('active');
         cell.classList.add('processed');
@@ -314,24 +328,21 @@ async function runSimulation() {
 
     await sleep(500);
 
-    // Evaluate result
-    const isAccepted = currentDFA.states[currentStateName].isAccept;
+    const finalState = currentDFA.states[currentStateName];
+    const isAccepted = finalState && finalState.isAccept;
 
     if (isAccepted) {
         resultDisplay.textContent = 'ACCEPTED';
-        resultDisplay.className = 'result-display visible accepted';
-        currentNode.classList.add('accept-state'); // Reinforce glow
+        resultDisplay.className = 'result accepted';
     } else {
         resultDisplay.textContent = 'REJECTED';
-        resultDisplay.className = 'result-display visible rejected';
+        resultDisplay.className = 'result rejected';
     }
 
-    btnRun.disabled = false;
-    inputStringBox.disabled = false;
+    runBtn.disabled = false;
+    testStringInput.disabled = false;
+    buildDfabtn.disabled = false;
 }
 
-function sleep(ms) {
-    return new Promise(resolve => {
-        simulationTimeout = setTimeout(resolve, ms);
-    });
-}
+// init
+buildDFA();

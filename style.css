@@ -1,6 +1,7 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #0b1120;
+    /* Very dark blue background */
     color: #e2e8f0;
     margin: 0;
     padding: 20px;
@@ -9,6 +10,7 @@ body {
 h1 {
     text-align: center;
     color: #eff6ff;
+    /* Lightest blue */
 }
 
 .container {
@@ -21,12 +23,13 @@ h1 {
 
 .panel {
     background: #1e293b;
+    /* Slate dark blue */
     padding: 20px;
     border: 1px solid #334155;
     border-radius: 8px;
     flex: 1;
     min-width: 350px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 h2 {
@@ -35,6 +38,7 @@ h2 {
     border-bottom: 2px solid #334155;
     padding-bottom: 5px;
     color: #bfdbfe;
+    /* Soft blue */
 }
 
 h3 {
@@ -61,7 +65,8 @@ h3 {
     margin-top: 2px;
 }
 
-input[type="text"], input[type="number"] {
+input[type="text"],
+input[type="number"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #475569;
@@ -69,12 +74,15 @@ input[type="text"], input[type="number"] {
     font-size: 14px;
     box-sizing: border-box;
     background: #0f172a;
+    /* Inner darker blue */
     color: #fff;
     outline: none;
 }
 
-input[type="text"]:focus, input[type="number"]:focus {
-    border-color: #3b82f6; /* Bright blue focus */
+input[type="text"]:focus,
+input[type="number"]:focus {
+    border-color: #3b82f6;
+    /* Bright blue focus */
     box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
 }
 
@@ -102,11 +110,24 @@ input[type="text"]:focus, input[type="number"]:focus {
     transition: all 0.2s;
 }
 
-.btn.primary { background-color: #2563eb; color: white; }
-.btn.primary:hover { background-color: #1d4ed8; }
+.btn.primary {
+    background-color: #2563eb;
+    color: white;
+}
 
-.btn.secondary { background-color: #334155; color: #e2e8f0; }
-.btn.secondary:hover { background-color: #475569; }
+/* Strong Royal blue */
+.btn.primary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn.secondary {
+    background-color: #334155;
+    color: #e2e8f0;
+}
+
+.btn.secondary:hover {
+    background-color: #475569;
+}
 
 .build-btn {
     width: 100%;
@@ -129,6 +150,7 @@ input[type="text"]:focus, input[type="number"]:focus {
     margin-bottom: 5px;
     padding: 0 5px;
 }
+
 .transition-headers span {
     flex: 1;
 }
@@ -141,11 +163,12 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .transition-row input {
     flex: 1;
-    min-width: 0; 
+    min-width: 0;
 }
 
 .remove-btn {
     background: #ef4444;
+    /* Keep red for destructive actions */
     color: white;
     border: none;
     border-radius: 4px;
@@ -185,6 +208,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .tape-cell.active {
     border-color: #3b82f6;
+    /* Bright blue highlight */
     background: rgba(59, 130, 246, 0.2);
     color: #60a5fa;
 }
@@ -204,8 +228,19 @@ input[type="text"]:focus, input[type="number"]:focus {
     margin-top: 10px;
 }
 
-.result.accepted { background: rgba(16, 185, 129, 0.2); color: #34d399; display: block; border: 1px solid #10b981; }
-.result.rejected { background: rgba(239, 68, 68, 0.2); color: #f87171; display: block; border: 1px solid #ef4444; }
+.result.accepted {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    display: block;
+    border: 1px solid #10b981;
+}
+
+.result.rejected {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    display: block;
+    border: 1px solid #ef4444;
+}
 
 #canvas-container {
     position: relative;
@@ -213,20 +248,25 @@ input[type="text"]:focus, input[type="number"]:focus {
     height: 400px;
     border: 1px solid #334155;
     background: #0f172a;
+    /* Deepest blue for canvas */
     border-radius: 4px;
 }
 
 #edges-svg {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
 }
 
 #nodes-container {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .dfa-node {
@@ -241,7 +281,7 @@ input[type="text"]:focus, input[type="number"]:focus {
     align-items: center;
     font-weight: bold;
     transform: translate(-50%, -50%);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
     transition: all 0.3s;
     color: #f1f5f9;
 }
@@ -260,6 +300,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .dfa-node.active {
     background: #3b82f6;
+    /* Blue active node */
     color: white;
     border-color: #60a5fa;
     transform: translate(-50%, -50%) scale(1.1);
@@ -284,8 +325,10 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .edge-group.active .edge-path {
     stroke: #3b82f6;
+    /* Blue active edge path */
     stroke-width: 3;
 }
+
 .edge-group.active .edge-arrow {
     fill: #3b82f6;
 }
@@ -297,6 +340,7 @@ input[type="text"]:focus, input[type="number"]:focus {
     text-anchor: middle;
     alignment-baseline: central;
 }
+
 .edge-label-bg {
     fill: #0f172a;
     rx: 2;

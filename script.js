@@ -41,24 +41,24 @@ buildDfabtn.addEventListener('click', buildDFA);
 runBtn.addEventListener('click', runSimulation);
 
 window.addEventListener('resize', () => {
-    if(currentDFA) renderDFA(currentDFA);
+    if (currentDFA) renderDFA(currentDFA);
 });
 
 function buildDFA() {
     clearTimeout(simulationTimeout);
     resultDisplay.className = 'result';
     tapeContainer.innerHTML = '';
-    
+
     const numStates = parseInt(numStatesInput.value) || 1;
     const startState = startStateInput.value.trim();
     const finalStates = finalStatesInput.value.split(',').map(s => s.trim()).filter(s => s);
-    
+
     const states = {};
     for (let i = 0; i < numStates; i++) {
         const stateName = `q${i}`;
         const angle = (Math.PI * 2 * i) / numStates - Math.PI / 2;
-        const radius = numStates > 1 ? 35 : 0; 
-        
+        const radius = numStates > 1 ? 35 : 0;
+
         states[stateName] = {
             isStart: stateName === startState,
             isAccept: finalStates.includes(stateName),
@@ -74,7 +74,7 @@ function buildDFA() {
             x: 50, y: 50
         };
     }
-    
+
     const transitionRows = document.querySelectorAll('.transition-row');
     const transitions = [];
     const alphabet = new Set();
@@ -84,7 +84,7 @@ function buildDFA() {
         const from = row.querySelector('.t-from').value.trim();
         const inputStr = row.querySelector('.t-input').value.trim();
         const to = row.querySelector('.t-to').value.trim();
-        
+
         if (from && inputStr && to) {
             const symbols = inputStr.split(',').map(s => s.trim());
             symbols.forEach(s => alphabet.add(s));
@@ -148,7 +148,7 @@ function renderDFA(dfa) {
     dfa.transitions.forEach(transition => {
         const fromState = dfa.states[transition.from];
         const toState = dfa.states[transition.to];
-        if(!fromState || !toState) return;
+        if (!fromState || !toState) return;
 
         const x1 = (fromState.x / 100) * canvasWidth;
         const y1 = (fromState.y / 100) * canvasHeight;
@@ -157,7 +157,7 @@ function renderDFA(dfa) {
 
         const hasReverse = dfa.transitions.some(t => t.from === transition.to && t.to === transition.from);
         const displayLabel = Array.from(new Set(transition.symbols)).join(',');
-        
+
         drawEdge(x1, y1, x2, y2, transition.from, transition.to, displayLabel, hasReverse);
     });
 }
@@ -172,7 +172,7 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
     path.setAttribute('class', 'edge-path');
     path.setAttribute('marker-end', 'url(#arrowhead)');
 
-    let cx, cy; 
+    let cx, cy;
 
     if (fromName === toName) {
         const loopRadius = 25;
@@ -184,7 +184,7 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
         const dy = y2 - y1;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if(dist === 0) return;
+        if (dist === 0) return;
 
         const nx = dx / dist;
         const ny = dy / dist;
@@ -197,7 +197,7 @@ function drawEdge(x1, y1, x2, y2, fromName, toName, labelText, isCurved) {
             const midX = (startX + endX) / 2;
             const midY = (startY + endY) / 2;
             const offset = 30;
-            const ctrlX = midX - ny * offset; 
+            const ctrlX = midX - ny * offset;
             const ctrlY = midY + nx * offset;
 
             path.setAttribute('d', `M ${startX} ${startY} Q ${ctrlX} ${ctrlY} ${endX} ${endY}`);
@@ -246,7 +246,7 @@ async function runSimulation() {
     }
 
     const inputStr = testStringInput.value.trim();
-    
+
     // UI logic lock
     runBtn.disabled = true;
     testStringInput.disabled = true;
@@ -275,7 +275,7 @@ async function runSimulation() {
     document.querySelectorAll('.edge-group').forEach(e => e.classList.remove('active'));
 
     const startStateName = Object.keys(currentDFA.states).find(k => currentDFA.states[k].isStart);
-    if(!startStateName) {
+    if (!startStateName) {
         alert("No start state defined!");
         runBtn.disabled = false;
         testStringInput.disabled = false;
@@ -285,7 +285,7 @@ async function runSimulation() {
 
     let currentStateName = startStateName;
     let currentNode = document.getElementById(`node-${currentStateName}`);
-    if(currentNode) currentNode.classList.add('active');
+    if (currentNode) currentNode.classList.add('active');
 
     await sleep(800);
 
@@ -298,7 +298,7 @@ async function runSimulation() {
         cell.classList.add('active');
 
         const transition = currentDFA.transitions.find(t => t.from === currentStateName && t.symbols.includes(char));
-        
+
         if (!transition) {
             resultDisplay.textContent = `REJECTED (No transition from ${currentStateName} for '${char}')`;
             resultDisplay.className = 'result rejected';
@@ -315,12 +315,12 @@ async function runSimulation() {
 
         await sleep(1000);
 
-        if(currentNode) currentNode.classList.remove('active');
+        if (currentNode) currentNode.classList.remove('active');
         if (edgeG) edgeG.classList.remove('active');
 
         currentStateName = transition.to;
         currentNode = document.getElementById(`node-${currentStateName}`);
-        if(currentNode) currentNode.classList.add('active');
+        if (currentNode) currentNode.classList.add('active');
 
         cell.classList.remove('active');
         cell.classList.add('processed');

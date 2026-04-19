@@ -4,64 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DFA Visualizer Interactive</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Simple DFA Simulator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="background-decorations">
-        <div class="blob shape-1"></div>
-        <div class="blob shape-2"></div>
-        <div class="blob shape-3"></div>
-    </div>
+    <h1>DFA Simulator</h1>
 
-    <div class="app-container">
-        <header>
-            <h1>DFA Simulator</h1>
-            <p>Theory of Computation - Interactive Automaton</p>
-        </header>
+    <div class="container">
+        <div class="panel setup-panel">
+            <h2>1. Define Automaton</h2>
 
-        <main class="grid-layout">
-            <aside class="control-panel glass-panel">
-                <div class="control-group">
-                    <label for="dfa-select">Select Automaton</label>
-                    <select id="dfa-select">
-                        <option value="endsWithAB">String ends with 'ab'</option>
-                        <option value="evenZeros">Even number of 0s</option>
-                        <option value="contains11">Contains '11'</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label for="input-string">Test String</label>
-                    <input type="text" id="input-string" placeholder="e.g. abaab" autocomplete="off">
-                </div>
-                <div class="actions">
-                    <button id="btn-run" class="btn primary">Simulate</button>
-                    <button id="btn-reset" class="btn secondary">Reset</button>
-                </div>
-                <div id="result-display" class="result-display hidden">
-                    <span id="result-text">ACCEPTED</span>
-                </div>
-                <div class="info-section">
-                    <h3>Current Rules:</h3>
-                    <p id="alphabet-info"></p>
-                    <p id="desc-info"></p>
-                </div>
-            </aside>
+            <div class="field">
+                <label>Number of States:</label>
+                <input type="number" id="num-states" value="3" min="1">
+                <small>States are named q0, q1, ...</small>
+            </div>
 
-            <section class="visualization-area glass-panel">
-                <div class="tape-container">
-                    <div id="tape" class="tape"></div>
+            <div class="transitions-section">
+                <h3>Transitions</h3>
+                <div class="transition-headers">
+                    <span>Current State</span>
+                    <span>Input</span>
+                    <span>Final State</span>
+                    <span></span>
                 </div>
+                <div id="transitions-container"></div>
+                <button id="add-transition-btn" class="btn secondary">Add Transition</button>
+            </div>
 
-                <div id="canvas-container" class="canvas-container">
-                    <!-- Nodes and Edges will be injected here via JS -->
-                    <svg id="edges-svg"></svg>
-                    <div id="nodes-container"></div>
-                </div>
-            </section>
-        </main>
+            <div class="field" style="margin-top: 15px;">
+                <label>Initial State (First Input):</label>
+                <input type="text" id="start-state" value="q0">
+            </div>
+
+            <div class="field">
+                <label>Final States (Comma separated):</label>
+                <input type="text" id="final-states" value="q2">
+            </div>
+
+            <button id="build-dfa-btn" class="btn primary build-btn">Build Automaton</button>
+        </div>
+
+        <div class="panel simulation-panel">
+            <h2>2. Test Automaton</h2>
+            <div class="field inline-field">
+                <label>Input String:</label>
+                <input type="text" id="test-string" placeholder="e.g. abaab">
+                <button id="run-btn" class="btn primary">Simulate</button>
+            </div>
+
+            <div id="result-display" class="result"></div>
+
+            <div id="tape-container" class="tape"></div>
+
+            <div id="canvas-container">
+                <svg id="edges-svg"></svg>
+                <div id="nodes-container"></div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
